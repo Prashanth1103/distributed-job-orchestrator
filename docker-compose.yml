@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+  redis:
+    image: redis:7.2-alpine
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec"]
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: orchestrator
+    ports:
+      - "5432:5432"
+
+  api:
+    build: .
+    environment:
+      ORCH_REDIS_URL: redis://redis:6379/0
+      ORCH_MAX_CONCURRENT_SLOTS: "6"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - postgres
